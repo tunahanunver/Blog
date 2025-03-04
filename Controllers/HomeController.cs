@@ -1,3 +1,5 @@
+using Blog.Data;
+using Blog.Entites;
 using Blog.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -6,21 +8,51 @@ namespace Blog.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        public readonly DatabaseContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(DatabaseContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var model = _context.Posts.ToList();
+            return View(model);
         }
 
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        [Route("hakkimda")]
+        public IActionResult About()
+        {
+            return View();
+        }
+
+        [Route("iletisim")]
+        public IActionResult ContactUs()
+        {
+            return View();
+        }
+
+        [HttpPost, Route("iletisim")]
+        public IActionResult ContactUs(Contact contact)
+        {
+            try
+            {
+                _context.Contacts.Add(contact);
+                _context.SaveChanges();
+                TempData["Message"] = "<div class='alert alert-success' >Mesajýnýz Gönderildi</div>";
+                return RedirectToAction("ContactUs");
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "Hata oluþtu!");
+            }
+            return View(contact);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
